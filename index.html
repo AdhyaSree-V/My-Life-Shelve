@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Life Shelves</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f5f0;--ink:#151515;--paper:#f3efe4;--mute:#777;--dot:#cfc9bb;--leaf:#4a7d3c;--cat:#c1855f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161512;--ink:#eee9dc;--paper:#2b2923;--mute:#9a9484;--dot:#34312b}}
+:root[data-theme="dark"]{--bg:#161512;--ink:#eee9dc;--paper:#2b2923;--mute:#9a9484;--dot:#34312b}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg) radial-gradient(var(--dot) 1.2px,transparent 1.3px) 0 0/32px 32px;color:var(--ink);font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+header{text-align:center;padding:34px 20px 8px}
+h1{font-weight:500;font-size:clamp(1.9rem,7vw,2.8rem);margin:0;line-height:1.1}
+.sub{font-size:.8rem;letter-spacing:.12em;margin:12px 0 0;color:var(--mute)}
+.tools{display:flex;justify-content:center;gap:8px;margin-top:16px}
+button{font:inherit;color:var(--ink)}
+.btn{background:var(--bg);border:1.5px solid var(--ink);padding:7px 14px;font-size:.78rem;letter-spacing:.08em;cursor:pointer}
+.btn:hover{background:var(--ink);color:var(--bg)}
+main{max-width:520px;margin:0 auto;padding:0 18px 40px}
+.shelf{margin-top:26px}
+.shelfhead{display:flex;justify-content:space-between;align-items:baseline;padding:0 6px}
+.shelfhead h2{font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;font-weight:500;margin:0}
+.link{background:none;border:0;cursor:pointer;font-size:.72rem;color:var(--mute);text-decoration:underline;padding:4px}
+.stage{display:flex;align-items:flex-end;gap:5px;height:230px;padding:0 14px;position:relative}
+.bar{height:16px;background:var(--ink);position:relative;border-radius:2px}
+.bar:before,.bar:after{content:"";position:absolute;top:100%;width:22px;height:20px;background:var(--ink);border-radius:0 0 10px 10px;left:44px}
+.bar:after{left:auto;right:44px}
+.deco{flex:none;margin-right:6px;align-self:flex-end}
+.book{flex:none;border:2px solid var(--ink);padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;cursor:pointer;transition:transform .2s;background:var(--ink);color:var(--paper)}
+.book.light{background:var(--paper);color:var(--ink)}
+.book:hover,.book:focus-visible{transform:translateY(-10px);outline:none}
+.book .t{writing-mode:vertical-rl;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;overflow:hidden;max-height:62%}
+.book svg{width:60%;max-width:28px;fill:currentColor;stroke:currentColor}
+.add{border:2px dashed var(--mute);background:none;color:var(--mute);font-size:1.4rem;width:40px;height:120px;cursor:pointer;flex:none}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:40px 0 10px}
+.chip{border:1.5px solid var(--ink);background:var(--bg);padding:9px 16px;font-size:.8rem;letter-spacing:.12em;cursor:pointer}
+.chip:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ink);margin-right:8px}
+.chip.empty:before{background:none;border:1.5px solid var(--ink)}
+.note{font-size:.7rem;color:var(--mute);text-align:center;margin-top:24px;line-height:1.6}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:30}
+.ov.on{display:flex}
+.panel{background:var(--bg);border:2px solid var(--ink);width:min(560px,100%);max-height:88vh;overflow:auto;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px))}
+.panel h3{margin:0;font-weight:500;font-size:1.05rem}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.entry{border:1.5px solid var(--ink);padding:10px 12px;margin-bottom:10px;background:var(--paper);cursor:pointer}
+.entry b{font-weight:500;font-size:.88rem}.entry small{display:block;color:var(--mute);font-size:.7rem;margin-top:2px}
+input,textarea{width:100%;font:inherit;font-size:.85rem;background:var(--bg);color:var(--ink);border:1.5px solid var(--ink);padding:9px;margin-bottom:10px;border-radius:0}
+textarea{min-height:240px;resize:vertical;line-height:1.6}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.hide{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">My Life<br>Shelves</h1>
+  <p class="sub">RECIPES. JOURNALS. EVERYTHING ELSE.</p>
+  <div class="tools"><button class="btn" id="addShelf">+ SHELF</button><button class="btn" id="theme">◐ THEME</button><button class="btn" id="exp">⇩ BACKUP</button><button class="btn" id="imp">⇧ RESTORE</button><input type="file" id="file" accept=".json" class="hide"></div>
+</header>
+<main id="main"></main>
+
+<div class="ov" id="ov"><div class="panel" id="panel"></div></div>
+
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const ICONS=['<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" stroke="none"/></svg>','<svg viewBox="0 0 20 20"><path d="M10 1l7 9-7 9-7-9z" stroke="none"/></svg>','<svg viewBox="0 0 20 20"><path d="M10 2l9 16H1z" stroke="none"/></svg>','<svg viewBox="0 0 20 20"><path d="M2 3h16a8 8 0 01-16 0z" stroke="none"/></svg>','<svg viewBox="0 0 20 20" fill="none" stroke-width="2"><path d="M4 2v16M8 2v16M12 2v16M16 2v16"/></svg>','<svg viewBox="0 0 20 20" fill="none" stroke-width="1.5"><path d="M2 2h16v16H2zM2 8h16M2 14h16M8 2v16M14 2v16"/></svg>','<svg viewBox="0 0 20 20"><path d="M10 1c1 6 3 8 9 9-6 1-8 3-9 9-1-6-3-8-9-9 6-1 8-3 9-9z" stroke="none"/></svg>'];
+// ---- decorations (one per shelf, cycling) ----
+const DECO=[
+`<svg width="120" height="190" viewBox="0 0 120 190"><g stroke="#4a7d3c" stroke-width="2" fill="none"><path d="M58 150C56 110 50 80 36 54M58 150C62 110 72 82 90 62M58 150C58 110 60 70 66 30"/></g><g fill="#4a7d3c"><ellipse cx="30" cy="50" rx="14" ry="22" transform="rotate(-30 30 50)"/><ellipse cx="94" cy="58" rx="14" ry="22" transform="rotate(35 94 58)"/><ellipse cx="68" cy="30" rx="13" ry="22" fill="#2f5c28"/></g><path d="M34 150h50l-6 40H40z" fill="#efece4" stroke="#bbb"/></svg>`,
+`<svg width="250" height="150" viewBox="0 0 250 150"><path d="M20 130c0-45 40-70 90-70 40 0 75 18 90 45l14-8-4-22 18 12 8 28c6 8 0 15-10 15z" fill="#c1855f"/><path d="M40 112c30 12 100 14 140 2" stroke="#8a5a3a" stroke-width="2" fill="none"/><path d="M12 128q-12 20 0 36" stroke="#c1855f" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M214 92q4 3 8 0M226 92q4 3 8 0" stroke="#151515" stroke-width="1.5" fill="none"/><text x="228" y="60" font-size="11" fill="#777">z</text><text x="242" y="46" font-size="9" fill="#777">z</text></svg>`,
+`<svg width="170" height="170" viewBox="0 0 170 170"><path d="M20 164c8-24 14-58 18-96M38 68L116 22" stroke="#151515" stroke-width="5" fill="none"/><path d="M104 14l34 12-20 26z" fill="#151515"/><circle cx="38" cy="68" r="5" fill="#f7f5f0" stroke="#151515" stroke-width="2"/><path d="M8 164a18 10 0 0136 0z" fill="#151515"/><path d="M60 164v-44h30v44z" fill="#151515"/><path d="M68 120l-4-34M76 120l1-38M84 120l8-32" stroke="#151515" stroke-width="3"/><rect x="112" y="136" width="26" height="28" rx="4" fill="#151515"/><rect x="118" y="128" width="14" height="8" fill="#151515"/></svg>`,
+`<svg width="170" height="150" viewBox="0 0 170 150"><g fill="none" stroke="#4a7d3c" stroke-width="1.6"><path d="M118 130C112 100 100 84 88 70M118 130C120 100 126 84 138 66M118 130C118 100 116 80 118 58"/></g><g fill="#4a7d3c"><circle cx="86" cy="68" r="7"/><circle cx="140" cy="64" r="7"/><circle cx="118" cy="54" r="7"/><circle cx="102" cy="80" r="6" fill="#2f5c28"/><circle cx="132" cy="80" r="6" fill="#2f5c28"/></g><path d="M100 130h38l-4 20h-30z" fill="#efece4" stroke="#bbb"/><g fill="#151515"><rect x="6" y="116" width="62" height="8"/><rect x="10" y="124" width="54" height="8" fill="#f7f5f0" stroke="#151515"/><rect x="6" y="132" width="62" height="8"/></g></svg>`];
+// ---- state & persistence ----
+let S,saveFn=null,mode='local';
+const seed=()=>({title:'My Life<br>Shelves',shelves:[
+ {id:uid(),name:'Recipes',books:['Breakfast','Dinner','Sweets'].map((t,i)=>({id:uid(),title:t,icon:i*2,entries:[]}))},
+ {id:uid(),name:'Journal',books:['Daily','Gratitude'].map((t,i)=>({id:uid(),title:t,icon:i*3+1,entries:[]}))}]});
+async function load(){
+  try{
+    const [user,db]=await Promise.all([claude.use('user'),claude.use('db')]);
+    if(user&&db){const id=await user.id();if(id){const ref=db.doc('data/users/'+id+'/library');const s=await ref.get();
+      if(s.exists&&s.data().json)S=JSON.parse(s.data().json);
+      saveFn=()=>ref.set({json:JSON.stringify(S)});mode='cloud'}}
+  }catch(e){}
+  if(!S){try{S=JSON.parse(localStorage.getItem('shelves')||'null')}catch(e){}
+    if(mode==='local')saveFn=()=>{try{localStorage.setItem('shelves',JSON.stringify(S))}catch(e){}}}
+  if(!S){S=seed();save()}
+  draw();
+}
+let t;function save(){clearTimeout(t);t=setTimeout(()=>{try{saveFn&&saveFn()}catch(e){}},400)}
+// ---- shelf rendering ----
+function draw(){
+  $('#title').innerHTML=S.title;
+  $('#main').innerHTML=S.shelves.map((sh,i)=>{
+    const books=sh.books.map((b,j)=>{
+      const h=150+((j*41+i*17)%52),w=48+((j*13)%16),light=(j+i)%2?'light':'';
+      return `<button class="book ${light}" data-s="${sh.id}" data-b="${b.id}" style="height:${h}px;width:${w}px" aria-label="Open ${esc(b.title)}">${ICONS[b.icon%ICONS.length]}<span class="t">${esc(b.title)}</span></button>`}).join('');
+    return `<section class="shelf" id="s-${sh.id}"><div class="shelfhead"><h2>${esc(sh.name)}</h2><span><button class="link" data-addb="${sh.id}">+ book</button><button class="link" data-edits="${sh.id}">edit</button></span></div>
+    <div class="stage"><span class="deco">${DECO[i%4]}</span>${books}<button class="add" data-addb="${sh.id}" aria-label="Add book">+</button></div><div class="bar"></div></section>`}).join('')
+  +`<div class="chips">${S.shelves.flatMap(s=>s.books.map(b=>`<button class="chip ${b.entries.length?'':'empty'}" data-s="${s.id}" data-b="${b.id}">${esc(b.title)}</button>`)).join('')}</div>
+  <p class="note">${mode==='cloud'?'Saved privately to your account.':'Saved in this browser on this device only. Tap BACKUP now and then to keep a copy.'}</p>`;
+}
+const find=(s,b)=>{const sh=S.shelves.find(x=>x.id===s);return[sh,sh&&sh.books.find(x=>x.id===b)]};
+// ---- panels ----
+const open=h=>{$('#panel').innerHTML=h;$('#ov').classList.add('on')},close=()=>$('#ov').classList.remove('on');
+function bookView(s,b){
+  const[sh,bk]=find(s,b);
+  open(`<div class="ph"><h3>${esc(sh.name)} / ${esc(bk.title)}</h3><button class="link" data-x>close</button></div>
+  <div class="row" style="margin-bottom:12px"><button class="btn" data-new="${s}|${b}">+ NEW ENTRY</button><button class="link" data-editb="${s}|${b}">rename / delete book</button></div>
+  ${bk.entries.length?bk.entries.slice().reverse().map(e=>`<div class="entry" data-ent="${s}|${b}|${e.id}"><b>${esc(e.title||'Untitled')}</b><small>${esc(e.date)}</small></div>`).join(''):'<p class="note">Empty book. Add your first entry.</p>'}`);
+}
+function entryForm(s,b,id){
+  const[,bk]=find(s,b);const e=id?bk.entries.find(x=>x.id===id):{title:'',body:'',date:new Date().toISOString().slice(0,10)};
+  open(`<div class="ph"><h3>${id?'Edit entry':'New entry'}</h3><button class="link" data-back="${s}|${b}">back</button></div>
+  <input id="et" placeholder="Title (e.g. Lemon pasta, or Tuesday)" value="${esc(e.title)}"><input id="ed" type="date" value="${esc(e.date)}">
+  <textarea id="eb" placeholder="Ingredients, steps, thoughts...">${esc(e.body)}</textarea>
+  <div class="row"><button class="btn" data-save="${s}|${b}|${id||''}">SAVE</button>${id?`<button class="btn" data-del="${s}|${b}|${id}">DELETE</button>`:''}</div>`);
+}
+function ask(label,val){return prompt(label,val||'')}
+// ---- events ----
+document.addEventListener('click',ev=>{
+  const el=ev.target.closest('button,.entry,.ov');if(!el)return;const d=el.dataset;
+  if(el.id==='ov'&&ev.target===el)return close();
+  if(el.id==='theme'){const r=document.documentElement,dk=getComputedStyle(r).getPropertyValue('--bg').trim()==='#161512';r.dataset.theme=dk?'light':'dark';return}
+  if(el.id==='exp'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='my-shelves-backup.json';a.click();return}
+  if(el.id==='imp')return $('#file').click();
+  if(el.id==='addShelf'){const n=ask('Shelf name (e.g. Travel, Fitness)');if(n){S.shelves.push({id:uid(),name:n,books:[]});save();draw()}return}
+  if('x' in d)return close();
+  if(d.back)return bookView(...d.back.split('|'));
+  if(d.s&&d.b)return bookView(d.s,d.b);
+  if(d.addb){const n=ask('Book name (e.g. Soups, 2026)');if(n){const sh=find(d.addb)[0];sh.books.push({id:uid(),title:n,icon:sh.books.length*3+1,entries:[]});save();draw()}return}
+  if(d.edits){const sh=find(d.edits)[0],n=ask('Rename shelf (leave empty to delete it)',sh.name);if(n===null)return;
+    if(n==='')S.shelves=S.shelves.filter(x=>x!==sh);else sh.name=n;save();draw();return}
+  if(d.editb){const[s,b]=d.editb.split('|'),[sh,bk]=find(s,b),n=ask('Rename book (leave empty to delete it)',bk.title);if(n===null)return;
+    if(n===''){if(confirm('Delete this book and all its entries?'))sh.books=sh.books.filter(x=>x!==bk);close()}else{bk.title=n;bookView(s,b)}save();draw();return}
+  if(d.new){const[s,b]=d.new.split('|');return entryForm(s,b)}
+  if(d.ent){const[s,b,id]=d.ent.split('|');return entryForm(s,b,id)}
+  if(d.save){const[s,b,id]=d.save.split('|'),bk=find(s,b)[1],v={title:$('#et').value.trim(),date:$('#ed').value,body:$('#eb').value};
+    if(id)Object.assign(bk.entries.find(x=>x.id===id),v);else bk.entries.push({id:uid(),...v});save();draw();return bookView(s,b)}
+  if(d.del){if(!confirm('Delete this entry?'))return;const[s,b,id]=d.del.split('|'),bk=find(s,b)[1];bk.entries=bk.entries.filter(x=>x.id!==id);save();draw();return bookView(s,b)}
+});
+$('#title').addEventListener('dblclick',()=>{const n=ask('Page title (use | for a line break)',S.title.replace('<br>','|'));if(n){S.title=esc(n).replace('|','<br>');save();draw()}});
+$('#file').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.shelves)throw 0;if(confirm('Replace everything on this device with the backup?')){S=d;save();draw()}}catch(x){alert('That file is not a valid backup.')}};r.readAsText(f);e.target.value=''});
+load();
+</script>
+</body>
+</html>
